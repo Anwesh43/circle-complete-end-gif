@@ -168,3 +168,5 @@ class CircleCompleteEndGif {
     }
 
 }
+
+module.exports = CircleCompleteEndGif.create
