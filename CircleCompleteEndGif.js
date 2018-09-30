@@ -119,3 +119,22 @@ class CircleCompleteEnd {
         this.root.draw(context)
     }
 }
+
+class Renderer {
+    constructor() {
+        this.running = true
+        this.cce = new CircleCompleteEnd()
+    }
+
+    render(context, cb, endcb) {
+        if (this.running) {
+            context.fillStyle = '#bdbdbd'
+            context.fillRect(0, 0, w, h)
+            this.cce.draw(context)
+            cb(context)
+            this.cce.update(() => {
+                endcb()
+            })
+        }
+    }
+}
