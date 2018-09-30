@@ -10,6 +10,7 @@ class State {
 
     update(cb) {
         this.scale += 0.025 * this.dir
+        //console.log(this.scale)
         if (Math.abs(this.scale - this.prevScale) > 1) {
             this.scale = this.prevScale + this.dir
             this.dir = 0
@@ -29,6 +30,7 @@ class CCENode {
     constructor(i) {
         this.i = i
         this.state = new State()
+        this.addNeighbor()
 
     }
 
@@ -83,7 +85,7 @@ class CCENode {
     }
 
     getNext(dir, cb) {
-        const curr = this.prev
+        var curr = this.prev
         if (dir == 1) {
             curr = this.next
         }
@@ -108,6 +110,7 @@ class CircleCompleteEnd {
             this.curr = this.curr.getNext(this.dir, () => {
                 this.dir = this.dir *=-1
             })
+            console.log(`currNode:${this.curr.i}`)
             if (this.curr.i == 0 && this.dir == 1) {
                 cb()
             } else {
@@ -128,13 +131,14 @@ class Renderer {
     }
 
     render(context, cb, endcb) {
-        if (this.running) {
-            context.fillStyle = '#bdbdbd'
-            context.fillRect(0, 0, w, h)
+        while (this.running) {
+            // context.fillStyle = '#bdbdbd'
+            context.clearRect(0, 0, w, h)
             this.cce.draw(context)
             cb(context)
             this.cce.update(() => {
                 endcb()
+                this.running = false
             })
         }
     }
@@ -146,17 +150,19 @@ class CircleCompleteEndGif {
         this.encoder = new GifEncoder(w, h)
         this.canvas = new Canvas(w, h)
         this.context = this.canvas.getContext('2d')
+        this.init(fn)
     }
 
     init(fn) {
-        this.encoder.createReadStream().pipe(require('fs').createWriteStream(fn))
         this.encoder.setDelay(50)
         this.encoder.setRepeat(0)
+        this.encoder.createReadStream().pipe(require('fs').createWriteStream(fn))
     }
 
     create() {
+        this.encoder.start()
         this.renderer.render(this.context, (context) => {
-            this.encoder.addFrame(this.context)
+            this.encoder.addFrame(context)
         }, () => {
             this.encoder.end()
         })
