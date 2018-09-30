@@ -1,5 +1,6 @@
 const w = 500, h = 500, nodes = 5
-
+const Canvas = require('canvas')
+const GifEncoder = require('gifencoder')
 class State {
     constructor() {
         this.scale = 0
@@ -137,4 +138,33 @@ class Renderer {
             })
         }
     }
+}
+
+class CircleCompleteEndGif {
+    constructor(fn) {
+        this.renderer = new Renderer()
+        this.encoder = new GifEncoder(w, h)
+        this.canvas = new Canvas(w, h)
+        this.context = this.canvas.getContext('2d')
+    }
+
+    init(fn) {
+        this.encoder.createReadStream().pipe(require('fs').createWriteStream(fn))
+        this.encoder.setDelay(50)
+        this.encoder.setRepeat(0)
+    }
+
+    create() {
+        this.renderer.render(this.context, (context) => {
+            this.encoder.addFrame(this.context)
+        }, () => {
+            this.encoder.end()
+        })
+    }
+
+    static create(fn) {
+        const gif = new CircleCompleteEndGif(fn)
+        gif.create()
+    }
+
 }
