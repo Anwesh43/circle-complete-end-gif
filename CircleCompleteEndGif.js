@@ -68,14 +68,17 @@ class CCENode {
             context.restore()
         }
         context.restore()
+        if (this.next) {
+            this.next.draw(context)
+        }
     }
 
     update(cb) {
         this.state.update(cb)
     }
 
-    startUpdating(cb) {
-        this.state.startUpdating(cb)
+    startUpdating() {
+        this.state.startUpdating()
     }
 
     getNext(dir, cb) {
@@ -88,5 +91,31 @@ class CCENode {
         }
         cb()
         return this
+    }
+}
+
+class CircleCompleteEnd {
+    constructor() {
+        this.root = new CCENode(0)
+        this.curr = this.root
+        this.curr.startUpdating()
+        this.dir = 1
+    }
+
+    update(cb) {
+        this.curr.update(() => {
+            this.curr = this.curr.getNext(this.dir, () => {
+                this.dir = this.dir *=-1
+            })
+            if (this.curr.i == 0 && this.dir == 1) {
+                cb()
+            } else {
+                this.curr.startUpdating()
+            }
+        })
+    }
+
+    draw(context) {
+        this.root.draw(context)
     }
 }
